@@ -1,0 +1,18 @@
+//
+// Created by viktor on 5/4/26.
+//
+
+#ifndef MODEL_H
+#define MODEL_H
+
+typedef struct {
+    void* impl;
+
+    void (*forward)(void* impl, double* input, double* output);
+    void (*backward)(void* impl, double* grad_output);
+    void (*update)(void* impl, double lr);
+    void (*free)(void* impl);
+
+} Model;
+
+#endif
