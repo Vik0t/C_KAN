@@ -2,7 +2,7 @@
 // Created by viktor on 5/4/26.
 //
 
-#ifndef C_KAN_CKAN_H
+
 
 #ifndef DATASET_H
 #define DATASET_H
@@ -19,8 +19,8 @@ typedef struct {
 
 Dataset* create_function_dataset(double (*f)(double), int n);
 
+double sin_func(double x);
 #endif
 
-#define C_KAN_CKAN_H
 
-#endif //C_KAN_CKAN_H
+

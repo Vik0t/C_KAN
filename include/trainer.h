@@ -2,7 +2,7 @@
 // Created by viktor on 5/4/26.
 //
 
-#ifndef C_KAN_CKAN_H
+
 
 #ifndef TRAINER_H
 #define TRAINER_H
@@ -14,6 +14,5 @@ void train(Model* model, Dataset* data, int epochs, double lr);
 
 #endif
 
-#define C_KAN_CKAN_H
 
-#endif //C_KAN_CKAN_H
+
