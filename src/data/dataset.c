@@ -26,7 +26,7 @@ Dataset* dataset_create_function_1d(double (*f)(double), double from, double to,
     dataset->Y[0][0] = f(from);
     dataset->Y[0][n-1] = f(to);
 
-    const double step = (to-from)/(double)n;
+    const double step = (to-from)/(double)(n-1);
 
     for (int i = 1; i < n-1; i++)
     {
@@ -67,11 +67,11 @@ int dataset_to_csv(const Dataset* data, const char* filename)
         fprintf(fpt, "input_%d,", i);
     }
 
-    for (int i = 0; i < data->input_dim-1; i++)
+    for (int i = 0; i < data->output_dim-1; i++)
     {
         fprintf(fpt, "target_%d,", i);
     }
-    fprintf(fpt, "target_%d\n", data->input_dim-1);
+    fprintf(fpt, "target_%d\n", data->output_dim-1);
 
     for (int i = 0; i < data->size; i++)
     {
