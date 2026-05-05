@@ -41,5 +41,9 @@ add_executable(test_kan tests/test_kan.c)
 target_link_libraries(test_kan C_KAN)
 add_test(NAME test_kan COMMAND test_kan)
 
+add_executable(test_dataset tests/test_dataset.c)
+target_link_libraries(test_dataset C_KAN)
+add_test(NAME test_dataset COMMAND test_dataset)
+
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRC_FILES})

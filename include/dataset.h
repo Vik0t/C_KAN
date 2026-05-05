@@ -18,6 +18,7 @@ typedef struct {
 
 Dataset* dataset_create_function_1d(double (*f)(double), double from, double to, int n);
 void dataset_free(Dataset* data);
+int dataset_to_csv(const Dataset* data, const char* filename);
 
 double sin_func(double x);
 #endif

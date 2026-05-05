@@ -16,7 +16,7 @@ void train(Model* model, Dataset* data, int epochs, double lr) {
             double grad[1];
             grad[0] = pred[0] - y[0];
 
-            model->backward(model->impl, grad);
+            //model->backward(model->impl, grad);
             model->update(model->impl, lr);
         }
     }
