@@ -11,3 +11,7 @@ double RELU(double x) {
 double Sigmoid(double x) {
     return 1.0 / exp(-x);
 }
+
+double Tanh(double x) {
+    return (exp(x) - exp(-x)) / (exp(x) + exp(-x));
+}

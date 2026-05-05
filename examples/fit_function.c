@@ -4,7 +4,7 @@
 #include "ckan.h"
 
 int main() {
-    Dataset* data = create_function_dataset(sin_func, 100);
+    Dataset* data = dataset_create_function_1d(sin_func, -1, 1, 100);
 
     Model* mlp = mlp_create(1, 16, 1);
     Model* kan = kan_create(1, 20);

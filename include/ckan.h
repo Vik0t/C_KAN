@@ -3,6 +3,7 @@
 //
 
 #ifndef C_KAN_CKAN_H
+#define C_KAN_CKAN_H
 
 #include "dataset.h"
 #include "kan.h"
@@ -10,8 +11,5 @@
 #include "loss.h"
 #include "model.h"
 #include "trainer.h"
-
-
-#define C_KAN_CKAN_H
 
 #endif //C_KAN_CKAN_H
