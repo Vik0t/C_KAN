@@ -19,6 +19,7 @@ typedef struct {
     double* b2;
 
     double* hidden_activations;
+    double* output;
 
 } MLP;
 

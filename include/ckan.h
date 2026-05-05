@@ -11,5 +11,6 @@
 #include "loss.h"
 #include "model.h"
 #include "trainer.h"
+#include "random.h"
 
 #endif //C_KAN_CKAN_H
