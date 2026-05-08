@@ -25,6 +25,14 @@ int main()
 
     printf("%f\n", y[0]);
 
+    Dataset *dataset;
+    dataset = dataset_create_function_1d(sin_func, -1, 1, 100);
+    assert(dataset != NULL);
+
+    train(mlp, dataset, 100, 1e-3);
+
+
+    dataset_free(dataset);
     mlp->free(mlp->impl);
     free(mlp);
     return 0;

@@ -3,21 +3,28 @@
 //
 #include "trainer.h"
 
+#include <stdio.h>
+#include "loss.h"
+
 void train(Model* model, Dataset* data, int epochs, double lr) {
     for (int e = 0; e < epochs; e++) {
+        double pred[data->size];
+        double y[data->size];
         for (int i = 0; i < data->size; i++) {
-            double* x = data->X[i];
-            double* y = data->Y[i];
+            double x[1];
 
-            double pred[1];
+            x[0] = data->X[0][i];
+            y[i] = data->Y[0][i];
 
-            model->forward(model->impl, x, pred);
+            model->forward(model->impl, x, &pred[i]);
 
             double grad[1];
-            grad[0] = pred[0] - y[0];
+            grad[0] = pred[i] - y[i];
 
-            //model->backward(model->impl, grad);
+            model->backward(model->impl, x,  grad);
             model->update(model->impl, lr);
+
         }
+        printf("epoch: %d, loss: %f \n", e, mse(pred, y, data->size));
     }
 }

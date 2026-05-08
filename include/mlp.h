@@ -15,8 +15,14 @@ typedef struct {
     double* W1;
     double* b1;
 
+    double* dW1;
+    double* db1;
+
     double* W2;
     double* b2;
+
+    double* dW2;
+    double* db2;
 
     double* hidden_activations;
     double* output;
