@@ -6,6 +6,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+// impl
 typedef struct Model {
     void* impl;
     int input_dim;
