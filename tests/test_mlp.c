@@ -2,6 +2,9 @@
 // Created by viktor on 5/4/26.
 //
 
+#include <assert.h>
+#include <math.h>
+
 #include "ckan.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +20,8 @@ int main()
     double y[1];
 
     mlp->forward(mlp->impl, x, y);
+
+    assert(isfinite(y[0]));
 
     printf("%f\n", y[0]);
 

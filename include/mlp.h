@@ -23,10 +23,6 @@ typedef struct {
 
 } MLP;
 
-static void mlp_backward(void* impl, const double* input, const double* grad_output);
-static void mlp_update(void* impl, double lr);
-static void mlp_zero_grad(void* impl);
-static int mlp_parameter_count(void* impl);
 
 #endif
 

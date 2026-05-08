@@ -9,8 +9,6 @@
 
 #include "model.h"
 
-Model* kan_create(int input_dim, int grid_size);
-
 typedef struct {
     int input_dim;
     int grid_size;
@@ -18,6 +16,8 @@ typedef struct {
     double** tables; // [input_dim][grid_size]
 
 } KAN;
+
+Model* kan_create(int input_size, int hidden_size, int output_size);
 
 #endif
 
