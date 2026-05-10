@@ -11,13 +11,25 @@
 
 typedef struct {
     int input_dim;
+    int output_dim;
     int grid_size;
 
-    double** tables; // [input_dim][grid_size]
+    double grid_min;
+    double grid_max;
+
+    double* table;
+    double* grad_table;
+
+    double bias;
+    double grad_bias;
+
+    int last_left_index;
+    int last_right_index;
+    double last_t;
 
 } KAN;
 
-Model* kan_create(int input_size, int hidden_size, int output_size);
+Model* kan_create(int input_size, int grid_size, int output_size);
 
 #endif
 
