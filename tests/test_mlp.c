@@ -29,7 +29,7 @@ int main()
     dataset = dataset_create_function_1d(sin_func, -1, 1, 100);
     assert(dataset != NULL);
 
-    train(mlp, dataset, 100, 1e-3);
+    train(mlp, dataset, 100, 1e-3, 0);
 
 
     dataset_free(dataset);

@@ -28,7 +28,7 @@ int main()
     dataset = dataset_create_function_1d(sin_func, -1, 1, 1000);
     assert(dataset != NULL);
 
-    train(kan, dataset, 100, 1e-3);
+    train(kan, dataset, 1000, 1e-3, 0);
 
 
     dataset_free(dataset);

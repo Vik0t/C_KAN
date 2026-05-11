@@ -35,16 +35,20 @@ double validate(Model* model, Dataset* data, double(*loss)(const double*, const 
 
         model->forward(model->impl, x, &pred[i]);
     }
-    return loss(y, pred, data->size);
+    return loss(pred, y, data->size);
 
 }
 
 
-void train(Model* model, Dataset* data, int epochs, double lr) {
+void train(Model* model, Dataset* data, int epochs, double lr, int verbose) {
     for (int e = 0; e < epochs; e++) {
         train_epoch(model, data, lr);
         double loss = validate(model, data, mse);
-        printf("epoch:%3d  loss: %5f\n", e, loss);
+        if (verbose)
+        {
+            printf("epoch:%3d  loss: %5f\n", e, loss);
+        }
+
     }
 }
 
