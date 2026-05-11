@@ -4,190 +4,245 @@
 
 #include "model.h"
 #include "mlp.h"
-#include <stdlib.h>
 #include "random.h"
+
+#include <stdlib.h>
 
 static void mlp_zero_grad(void* impl)
 {
     MLP* mlp = (MLP*)impl;
 
-    for (int j = 0; j < mlp->hidden; j++)
+    for (int l = 0; l < mlp->layer_count - 1; l++)
     {
-        mlp->db1[j] = 0;
-    }
+        int current_size = mlp->sizes[l];
+        int next_size = mlp->sizes[l + 1];
 
-    for (int i = 0; i < mlp->in; i++)
-    {
-        for (int j = 0; j < mlp->hidden; j++)
+        for (int j = 0; j < next_size; j++)
         {
-            mlp->dW1[i*mlp->hidden+j] = 0;
+            mlp->grad_biases[l][j] = 0.0;
         }
-    }
 
-    for (int k = 0; k < mlp->out; k++)
-    {
-        mlp->db2[k] = 0;
-        for (int j = 0; j < mlp->hidden; j++)
+        for (int i = 0; i < current_size; i++)
         {
-            mlp->dW2[j*mlp->out+k] = 0;
+            for (int j = 0; j < next_size; j++)
+            {
+                mlp->grad_weights[l][i * next_size + j] = 0.0;
+            }
         }
     }
 }
 
 static void mlp_backward(void* impl, const double* input, const double* grad_output)
 {
+    (void)input;
+
     MLP* mlp = (MLP*)impl;
+    int last_layer = mlp->layer_count - 1;
+
     mlp_zero_grad(impl);
-    double *grad_hidden = calloc(mlp->hidden, sizeof(double));
 
-    for (int k = 0; k < mlp->out; k++)
+    double** deltas = malloc(sizeof(double*) * mlp->layer_count);
+    for (int l = 0; l < mlp->layer_count; l++)
     {
-        mlp->db2[k] = grad_output[k];
-        for (int j = 0; j < mlp->hidden; j++)
+        deltas[l] = calloc(mlp->sizes[l], sizeof(double));
+    }
+
+    for (int j = 0; j < mlp->sizes[last_layer]; j++)
+    {
+        deltas[last_layer][j] = grad_output[j];
+    }
+
+    for (int l = last_layer - 1; l >= 1; l--)
+    {
+        int current_size = mlp->sizes[l];
+        int next_size = mlp->sizes[l + 1];
+
+        for (int i = 0; i < current_size; i++)
         {
-            mlp->dW2[j*mlp->out+k] = mlp->hidden_activations[j]*grad_output[k];
-            grad_hidden[j] += grad_output[k]*mlp->W2[j*mlp->out+k];
+            double grad = 0.0;
+            for (int j = 0; j < next_size; j++)
+            {
+                grad += mlp->weights[l][i * next_size + j] * deltas[l + 1][j];
+            }
+
+            double activation = mlp->activations[l][i];
+            deltas[l][i] = grad * (1.0 - activation * activation);
         }
     }
 
-    for (int j = 0; j < mlp->hidden; j++)
+    for (int l = 0; l < mlp->layer_count - 1; l++)
     {
-        double z = grad_hidden[j] * (1 - mlp->hidden_activations[j]*mlp->hidden_activations[j]);
-        mlp->db1[j] = z;
-        for (int i = 0; i < mlp->in; i++)
+        int current_size = mlp->sizes[l];
+        int next_size = mlp->sizes[l + 1];
+
+        for (int j = 0; j < next_size; j++)
         {
-            mlp->dW1[i*mlp->hidden+j] = input[i]*z;
+            mlp->grad_biases[l][j] = deltas[l + 1][j];
         }
 
+        for (int i = 0; i < current_size; i++)
+        {
+            for (int j = 0; j < next_size; j++)
+            {
+                mlp->grad_weights[l][i * next_size + j] =
+                    mlp->activations[l][i] * deltas[l + 1][j];
+            }
+        }
     }
-    free(grad_hidden);
+
+    for (int l = 0; l < mlp->layer_count; l++)
+    {
+        free(deltas[l]);
+    }
+    free(deltas);
 }
 
 static void mlp_update(void* impl, double lr)
 {
     MLP* mlp = (MLP*)impl;
-    for (int i = 0; i < mlp->in; i++)
+
+    for (int l = 0; l < mlp->layer_count - 1; l++)
     {
-        for (int j = 0; j < mlp->hidden; j++)
+        int current_size = mlp->sizes[l];
+        int next_size = mlp->sizes[l + 1];
+
+        for (int j = 0; j < next_size; j++)
         {
-            mlp->W1[i*mlp->hidden+j] -= mlp->dW1[i*mlp->hidden+j]*lr;
+            mlp->biases[l][j] -= lr * mlp->grad_biases[l][j];
         }
-    }
 
-    for (int k = 0; k < mlp->hidden; k++)
-    {
-        mlp->b1[k] -= mlp->db1[k]*lr;
-    }
-
-    for (int i = 0; i < mlp->out; i++)
-    {
-        mlp->b2[i] -= mlp->db2[i]*lr;
-    }
-
-
-    for (int j = 0; j < mlp->hidden; j++)
-    {
-
-        for (int k = 0; k < mlp->out; k++)
+        for (int i = 0; i < current_size; i++)
         {
-             mlp->W2[j*mlp->out+k] -= mlp->dW2[j*mlp->out+k]*lr;
+            for (int j = 0; j < next_size; j++)
+            {
+                int index = i * next_size + j;
+                mlp->weights[l][index] -= lr * mlp->grad_weights[l][index];
+            }
         }
     }
 }
 
-
-
 static int mlp_parameter_count(void* impl)
 {
     MLP* mlp = (MLP*)impl;
-    return mlp->in * mlp->hidden + mlp->hidden
-         + mlp->hidden * mlp->out + mlp->out;
+
+    int count = 0;
+    for (int l = 0; l < mlp->layer_count - 1; l++)
+    {
+        count += mlp->sizes[l] * mlp->sizes[l + 1] + mlp->sizes[l + 1];
+    }
+
+    return count;
 }
 
 static void mlp_forward(void* impl, const double* input, double* output)
 {
     MLP* mlp = (MLP*)impl;
 
-
-    for (int j = 0; j < mlp->hidden; j++)
+    for (int i = 0; i < mlp->sizes[0]; i++)
     {
-        double z = mlp->b1[j];
-        for (int i = 0; i < mlp->in; i++)
-        {
-            z += mlp->W1[i*mlp->hidden + j] * input[i];
-        }
-        mlp->hidden_activations[j] = Tanh(z);
+        mlp->activations[0][i] = input[i];
     }
 
-    for (int k = 0; k < mlp->out; k++)
+    for (int l = 0; l < mlp->layer_count - 1; l++)
     {
-        double z = mlp->b2[k];
-        for (int j = 0; j < mlp->hidden; j++)
+        int current_size = mlp->sizes[l];
+        int next_size = mlp->sizes[l + 1];
+
+        for (int j = 0; j < next_size; j++)
         {
-            z += mlp->hidden_activations[j] * mlp->W2[j*mlp->out + k];
+            double z = mlp->biases[l][j];
+            for (int i = 0; i < current_size; i++)
+            {
+                z += mlp->activations[l][i] * mlp->weights[l][i * next_size + j];
+            }
+
+            if (l == mlp->layer_count - 2)
+            {
+                mlp->activations[l + 1][j] = z;
+            }
+            else
+            {
+                mlp->activations[l + 1][j] = Tanh(z);
+            }
         }
-        output[k] = z;
-        mlp->output[k] = z;
     }
 
-
+    int output_layer = mlp->layer_count - 1;
+    for (int i = 0; i < mlp->sizes[output_layer]; i++)
+    {
+        output[i] = mlp->activations[output_layer][i];
+    }
 }
 
 static void mlp_free(void* impl)
 {
     MLP* mlp = (MLP*)impl;
 
-    free(mlp->W1);
-    free(mlp->b1);
-    free(mlp->db1);
-    free(mlp->dW1);
+    for (int l = 0; l < mlp->layer_count - 1; l++)
+    {
+        free(mlp->weights[l]);
+        free(mlp->grad_weights[l]);
+        free(mlp->biases[l]);
+        free(mlp->grad_biases[l]);
+    }
 
-    free(mlp->W2);
-    free(mlp->b2);
-    free(mlp->db2);
-    free(mlp->dW2);
+    for (int l = 0; l < mlp->layer_count; l++)
+    {
+        free(mlp->activations[l]);
+    }
 
-
-    free(mlp->hidden_activations);
-    free(mlp->output);
-
+    free(mlp->weights);
+    free(mlp->biases);
+    free(mlp->grad_weights);
+    free(mlp->grad_biases);
+    free(mlp->activations);
+    free(mlp->sizes);
     free(mlp);
 }
 
-Model* mlp_create(int input_size, int hidden_size, int output_size)
+Model* mlp_create(int* sizes, int layer_count)
 {
-    MLP* mlp = (MLP*)malloc(sizeof(MLP));
-    mlp->in = input_size;
-    mlp->hidden = hidden_size;
-    mlp->out = output_size;
+    int weight_layer_count = layer_count - 1;
 
-    mlp->W1 = malloc(sizeof(double) * input_size * hidden_size);
-    random_fill_uniform(mlp->W1, input_size * hidden_size, -0.5, 0.5);
-    mlp->dW1 = calloc(input_size * hidden_size,sizeof(double));
+    MLP* mlp = malloc(sizeof(MLP));
+    mlp->layer_count = layer_count;
 
-    mlp->b1 = calloc(hidden_size , sizeof(double));
-    mlp->db1 = calloc(hidden_size , sizeof(double));
+    mlp->sizes = malloc(sizeof(int) * layer_count);
+    for (int i = 0; i < layer_count; i++)
+    {
+        mlp->sizes[i] = sizes[i];
+    }
 
+    mlp->weights = malloc(sizeof(double*) * weight_layer_count);
+    mlp->biases = malloc(sizeof(double*) * weight_layer_count);
+    mlp->grad_weights = malloc(sizeof(double*) * weight_layer_count);
+    mlp->grad_biases = malloc(sizeof(double*) * weight_layer_count);
+    mlp->activations = malloc(sizeof(double*) * layer_count);
 
-    mlp->W2 = malloc(sizeof(double) * output_size * hidden_size);
-    random_fill_uniform(mlp->W2, output_size * hidden_size, -0.5, 0.5);
-    mlp->dW2 = calloc(output_size * hidden_size,sizeof(double));
+    for (int l = 0; l < layer_count; l++)
+    {
+        mlp->activations[l] = calloc(mlp->sizes[l], sizeof(double));
+    }
 
-    mlp->b2 = calloc(output_size , sizeof(double));
-    mlp->db2 = calloc(output_size , sizeof(double));
+    for (int l = 0; l < weight_layer_count; l++)
+    {
+        int weight_count = mlp->sizes[l] * mlp->sizes[l + 1];
+        int bias_count = mlp->sizes[l + 1];
 
-    mlp->hidden_activations = malloc(sizeof(double) * hidden_size);
-    mlp->output = malloc(sizeof(double) * output_size);
+        mlp->weights[l] = malloc(sizeof(double) * weight_count);
+        random_fill_uniform(mlp->weights[l], weight_count, -0.1, 0.1);
 
+        mlp->grad_weights[l] = calloc(weight_count, sizeof(double));
+        mlp->biases[l] = calloc(bias_count, sizeof(double));
+        mlp->grad_biases[l] = calloc(bias_count, sizeof(double));
+    }
 
-    // щас реально оборачиваем
-
-    Model* model = (Model*)malloc(sizeof(Model));
+    Model* model = malloc(sizeof(Model));
 
     model->impl = mlp;
-    model->input_dim = input_size;
-    model->output_dim = output_size;
-
+    model->input_dim = mlp->sizes[0];
+    model->output_dim = mlp->sizes[layer_count - 1];
 
     model->forward = mlp_forward;
     model->backward = mlp_backward;
@@ -197,6 +252,4 @@ Model* mlp_create(int input_size, int hidden_size, int output_size)
     model->zero_grad = mlp_zero_grad;
 
     return model;
-
 }
-

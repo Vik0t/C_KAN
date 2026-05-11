@@ -13,8 +13,8 @@ int main()
 {
 
     random_seed(42);
-
-    Model* mlp = mlp_create(1, 16, 1);
+    int sizes[] = {1, 16, 1};
+    Model *mlp = mlp_create(sizes, 3);
 
     double x[1] = {0.5};
     double y[1];
@@ -29,7 +29,7 @@ int main()
     dataset = dataset_create_function_1d(sin_func, -1, 1, 100);
     assert(dataset != NULL);
 
-    train(mlp, dataset, 100, 1e-3, 0);
+    train(mlp, dataset, 100, 1e-3, 1);
 
 
     dataset_free(dataset);

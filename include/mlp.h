@@ -7,26 +7,19 @@
 #define MLP_H
 #include "model.h"
 
-Model* mlp_create(int input_size, int hidden_size, int output_size);
+Model* mlp_create(int *sizes, int layer_count);
 
 typedef struct {
-    int in, hidden, out;
+    int layer_count;
+    int* sizes;
 
-    double* W1;
-    double* b1;
+    double** weights;
+    double** biases;
 
-    double* dW1;
-    double* db1;
+    double** grad_weights;
+    double** grad_biases;
 
-    double* W2;
-    double* b2;
-
-    double* dW2;
-    double* db2;
-
-    double* hidden_activations;
-    double* output;
-
+    double** activations;
 } MLP;
 
 
