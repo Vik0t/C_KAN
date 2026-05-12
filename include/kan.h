@@ -9,6 +9,7 @@
 
 #include "model.h"
 
+
 typedef struct {
     int input_dim;
     int output_dim;
@@ -17,19 +18,28 @@ typedef struct {
     double grid_min;
     double grid_max;
 
-    double* table;
-    double* grad_table;
+    double* tables;
+    double* grad_tables;
 
-    double bias;
-    double grad_bias;
+    double* biases;
+    double* grad_biases;
 
-    int last_left_index;
-    int last_right_index;
-    double last_t;
+    int* last_left;
+    int* last_right;
+    double* last_t;
+
+} KANLayer;
+
+
+typedef struct {
+    int layer_count;
+    int *sizes;
+    KANLayer* layers;
+    double **activations;
 
 } KAN;
 
-Model* kan_create(int input_size, int grid_size, int output_size);
+Model* kan_create(int *sizes, int layer_count, int grid_size);
 
 #endif
 

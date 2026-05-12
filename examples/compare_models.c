@@ -18,7 +18,7 @@ int main(void)
 
     int sizes[] = {1, 16, 1};
     Model *mlp = mlp_create(sizes, 3);
-    Model* kan = kan_create(1, 20, 1);
+    Model* kan = kan_create(sizes, 3, 20);
 
     Dataset* dataset = dataset_create_function_1d(sin_func, -1, 1, sample_count);
     assert(dataset != NULL);
