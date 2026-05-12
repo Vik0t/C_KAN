@@ -11,16 +11,17 @@ int main(void)
 {
     random_seed(42);
 
-    int epochs = 300;
-    int sample_count = 1000;
+    int epochs = 100;
+    int sample_count = 10000;
     double lr = 1e-3;
 
 
-    int sizes[] = {1, 16, 1};
-    Model *mlp = mlp_create(sizes, 3);
-    Model* kan = kan_create(sizes, 3, 20);
+    int sizes[] = {2, 16, 1};
+    int mlp_sizes[] = {2, 16, 1};
+    Model *mlp = mlp_create(mlp_sizes, 3);
+    Model* kan = kan_create(sizes, 3, 16);
 
-    Dataset* dataset = dataset_create_function_1d(sin_func, -1, 1, sample_count);
+    Dataset* dataset = dataset_create_function_2d(bespalov, -1, 1, sample_count);
     assert(dataset != NULL);
 
     train(mlp, dataset, epochs, lr, 0);

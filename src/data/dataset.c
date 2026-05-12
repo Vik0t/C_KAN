@@ -5,6 +5,9 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
+
+#include "random.h"
 
 
 Dataset* dataset_create_function_1d(double (*f)(double), double from, double to, int n)
@@ -32,6 +35,36 @@ Dataset* dataset_create_function_1d(double (*f)(double), double from, double to,
     {
         dataset->X[0][i] = dataset->X[0][i-1] + step;
         dataset->Y[0][i] = f(dataset->X[0][i]);
+    }
+
+    return dataset;
+}
+
+Dataset* dataset_create_function_2d(double (*f)(double, double), double from, double to, int n)
+{
+    Dataset* dataset = (Dataset*)malloc(sizeof(Dataset));
+    dataset->size = n;
+    dataset->input_dim = 2;
+    dataset->output_dim = 1;
+
+    dataset->X = malloc(sizeof(double*) * dataset->input_dim);
+    dataset->Y = malloc(sizeof(double*) * dataset->output_dim);
+
+    dataset->X[0] = malloc(sizeof(double) * n);
+    dataset->X[1] = malloc(sizeof(double) * n);
+    dataset->Y[0] = malloc(sizeof(double) * n);
+
+    dataset->X[0][0] = from;
+    dataset->X[0][n-1] = to;
+
+    dataset->Y[0][0] = f(dataset->X[0][0], dataset->X[1][0]);
+    dataset->Y[0][n-1] = f(dataset->X[0][n-1], dataset->X[1][n-1]);
+
+    random_fill_uniform(dataset->X[0], n, from, to);
+    random_fill_uniform(dataset->X[1], n, from, to);
+
+    for (int i = 1; i < n; i++) {
+        dataset->Y[0][i] = f(dataset->X[0][i], dataset->X[1][i]);
     }
 
     return dataset;
@@ -102,3 +135,10 @@ double sin_func(double x) {
     return sin(x);
 }
 
+double bespalov(double x1, double x2) {
+    return
+        sin(M_PI * x1)
+        + 0.4 * sin(19.0 * M_PI * x1)
+        + sin(M_PI * x2)
+        + 0.4 * sin(23.0 * M_PI * x2);
+}
