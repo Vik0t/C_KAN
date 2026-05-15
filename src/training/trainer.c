@@ -7,36 +7,60 @@
 #include "loss.h"
 
 void train_epoch(Model* model, Dataset* data, double lr) {
-    double pred[data->size];
-    double y[data->size];
     for (int i = 0; i < data->size; i++) {
-        double x[1];
 
-        x[0] = data->X[0][i];
-        y[i] = data->Y[0][i];
+        double x[data->input_dim];
+        double y[data->output_dim];
+        double pred[data->output_dim];
+        double grad[data->output_dim];
 
-        model->forward(model->impl, x, &pred[i]);
+        for (int j = 0; j < data->input_dim; j++)
+        {
+            x[j] = data->X[j][i];
+        }
+        for (int k = 0; k < data->output_dim; k++)
+        {
+            y[k] = data->Y[k][i];
+        }
 
-        double grad[1];
-        grad[0] = pred[i] - y[i];
+        model->forward(model->impl, x, pred);
+
+        for (int k = 0; k < data->output_dim; k++)
+        {
+            grad[k] = pred[k] - y[k];
+        }
 
         model->backward(model->impl, x,  grad);
         model->update(model->impl, lr);
+
     }
 }
 
 double validate(Model* model, Dataset* data, double(*loss)(const double*, const double*, int)) {
-    double pred[data->size];
-    double y[data->size];
-    double x[1];
+    double x[data->input_dim];
+    double y[data->output_dim];
+    double pred[data->output_dim];
+
+
+    double total_loss = 0;
+
     for (int i = 0; i < data->size; i++) {
-        x[0] = data->X[0][i];
-        y[i] = data->Y[0][i];
 
-        model->forward(model->impl, x, &pred[i]);
+        for (int j = 0; j < data->input_dim; j++)
+        {
+            x[j] = data->X[j][i];
+        }
+
+        for (int k = 0; k < data->output_dim; k++)
+        {
+            y[k] = data->Y[k][i];
+        }
+
+        model->forward(model->impl, x, pred);
+        total_loss += loss(pred, y, data->output_dim);
     }
-    return loss(pred, y, data->size);
 
+    return total_loss / data->size;
 }
 
 

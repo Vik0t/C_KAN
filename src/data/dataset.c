@@ -57,11 +57,12 @@ Dataset* dataset_create_function_2d(double (*f)(double, double), double from, do
     dataset->X[0][0] = from;
     dataset->X[0][n-1] = to;
 
+    random_fill_uniform(dataset->X[0], n, from, to);
+    random_fill_uniform(dataset->X[1], n, from, to);
+
     dataset->Y[0][0] = f(dataset->X[0][0], dataset->X[1][0]);
     dataset->Y[0][n-1] = f(dataset->X[0][n-1], dataset->X[1][n-1]);
 
-    random_fill_uniform(dataset->X[0], n, from, to);
-    random_fill_uniform(dataset->X[1], n, from, to);
 
     for (int i = 1; i < n; i++) {
         dataset->Y[0][i] = f(dataset->X[0][i], dataset->X[1][i]);
