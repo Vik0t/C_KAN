@@ -16,7 +16,9 @@ file(GLOB_RECURSE SRC_FILES
 # библиотека
 add_library(C_KAN STATIC ${SRC_FILES})
 
-target_include_directories(C_KAN PUBLIC include)
+target_include_directories(C_KAN PUBLIC
+        include
+        third_party/fftw/include)
 
 
 # демо
@@ -44,6 +46,13 @@ add_test(NAME test_kan COMMAND test_kan)
 add_executable(test_dataset tests/test_dataset.c)
 target_link_libraries(test_dataset C_KAN)
 add_test(NAME test_dataset COMMAND test_dataset)
+
+add_executable(test_fftw tests/test_fftw.c)
+target_link_libraries(test_fftw
+        C_KAN
+        ${CMAKE_SOURCE_DIR}/third_party/fftw/lib/libfftw3.dll.a
+)
+add_test(NAME test_fftw COMMAND test_fftw)
 
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRC_FILES})

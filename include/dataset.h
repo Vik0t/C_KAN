@@ -18,6 +18,8 @@ typedef struct {
 
 Dataset* dataset_create_function_1d(double (*f)(double), double from, double to, int n);
 Dataset* dataset_create_function_2d(double (*f)(double, double), double from, double to, int n);
+Dataset* dataset_create_grid_2d(double (*f)(double, double), double from, double to, int grid_size);
+
 void dataset_free(Dataset* data);
 int dataset_to_csv(const Dataset* data, const char* filename);
 

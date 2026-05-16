@@ -54,9 +54,6 @@ Dataset* dataset_create_function_2d(double (*f)(double, double), double from, do
     dataset->X[1] = malloc(sizeof(double) * n);
     dataset->Y[0] = malloc(sizeof(double) * n);
 
-    dataset->X[0][0] = from;
-    dataset->X[0][n-1] = to;
-
     random_fill_uniform(dataset->X[0], n, from, to);
     random_fill_uniform(dataset->X[1], n, from, to);
 
@@ -70,6 +67,43 @@ Dataset* dataset_create_function_2d(double (*f)(double, double), double from, do
 
     return dataset;
 }
+
+
+Dataset* dataset_create_grid_2d(double (*f)(double, double), double from, double to, int grid_size)
+{
+    Dataset* dataset = (Dataset*)malloc(sizeof(Dataset));
+    dataset->size = grid_size*grid_size;
+    dataset->input_dim = 2;
+    dataset->output_dim = 1;
+
+
+    dataset->X = malloc(sizeof(double*) * dataset->input_dim);
+    dataset->Y = malloc(sizeof(double*) * dataset->output_dim);
+
+    dataset->X[0] = malloc(sizeof(double) * dataset->size);
+    dataset->X[1] = malloc(sizeof(double) * dataset->size);
+    dataset->Y[0] = malloc(sizeof(double) * dataset->size);
+
+    const double step = (to-from)/(double)(grid_size-1);
+
+
+    for (int i = 0; i < grid_size; i++) {
+        double x2 = from + i*step;
+        for (int j = 0; j < grid_size; j++)
+        {
+            double x1 = from + j*step;
+            int index = i*grid_size +j;
+
+            dataset->X[0][index] = x1;
+            dataset->X[1][index] = x2;
+            dataset->Y[0][index] = f(dataset->X[0][index], dataset->X[1][index]);
+        }
+
+    }
+
+    return dataset;
+}
+
 
 void dataset_free(Dataset* data)
 {
