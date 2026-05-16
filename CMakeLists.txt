@@ -29,7 +29,10 @@ add_executable(solve_ode examples/solve_ode.c)
 target_link_libraries(solve_ode C_KAN)
 
 add_executable(compare_models examples/compare_models.c)
-target_link_libraries(compare_models C_KAN)
+target_link_libraries(compare_models
+        C_KAN
+        ${CMAKE_SOURCE_DIR}/third_party/fftw/lib/libfftw3.dll.a
+)
 
 
 # тесты

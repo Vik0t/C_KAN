@@ -28,8 +28,14 @@ int main()
     Dataset *dataset;
     dataset = dataset_create_function_1d(sin_func, -1, 1, 100);
     assert(dataset != NULL);
+    
+    double loss_before = validate(mlp, dataset, mse);
+    train(mlp, dataset, 1000, 1e-3, 0);
+    double loss_after = validate(mlp, dataset, mse);
 
-    train(mlp, dataset, 100, 1e-3, 1);
+    printf("loss before: %f\n", loss_before);
+    printf("loss after:  %f\n", loss_after);
+    assert(loss_after < loss_before);
 
 
     dataset_free(dataset);
